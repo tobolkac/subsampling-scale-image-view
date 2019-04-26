@@ -14,15 +14,11 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
-import android.support.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.support.annotation.AnyThread;
-import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -50,6 +46,11 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import androidx.annotation.AnyThread;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.exifinterface.media.ExifInterface;
 
 /**
  * <p>
@@ -132,7 +133,7 @@ public class SubsamplingScaleImageView extends View {
     public static final int ORIGIN_DOUBLE_TAP_ZOOM = 4;
 
     // Bitmap (preview or full image)
-    private Bitmap bitmap;
+    protected Bitmap bitmap;
 
     // Whether the bitmap is a preview image
     private boolean bitmapIsPreview;
@@ -1410,7 +1411,7 @@ public class SubsamplingScaleImageView extends View {
      * @param center Whether the image should be centered in the dimension it's too small to fill. While animating this can be false to avoid changes in direction as bounds are reached.
      * @param sat The scale we want and the translation we're aiming for. The values are adjusted to be valid.
      */
-    private void fitToBounds(boolean center, ScaleAndTranslate sat) {
+    protected void fitToBounds(boolean center, ScaleAndTranslate sat) {
         if (panLimit == PAN_LIMIT_OUTSIDE && isReady()) {
             center = false;
         }
@@ -1913,13 +1914,25 @@ public class SubsamplingScaleImageView extends View {
 
     }
 
-    private static class ScaleAndTranslate {
+    protected static class ScaleAndTranslate {
         private ScaleAndTranslate(float scale, PointF vTranslate) {
             this.scale = scale;
             this.vTranslate = vTranslate;
         }
         private float scale;
         private final PointF vTranslate;
+
+        public float getScale() {
+            return scale;
+        }
+
+        public PointF getvTranslate() {
+            return vTranslate;
+        }
+
+        public void setScale(float scale) {
+            this.scale = scale;
+        }
     }
 
     /**
@@ -1967,7 +1980,7 @@ public class SubsamplingScaleImageView extends View {
      * Get source width taking rotation into account.
      */
     @SuppressWarnings("SuspiciousNameCombination")
-    private int sWidth() {
+    protected int sWidth() {
         int rotation = getRequiredRotation();
         if (rotation == 90 || rotation == 270) {
             return sHeight;
@@ -1980,7 +1993,7 @@ public class SubsamplingScaleImageView extends View {
      * Get source height taking rotation into account.
      */
     @SuppressWarnings("SuspiciousNameCombination")
-    private int sHeight() {
+    protected int sHeight() {
         int rotation = getRequiredRotation();
         if (rotation == 90 || rotation == 270) {
             return sWidth;
@@ -2265,7 +2278,7 @@ public class SubsamplingScaleImageView extends View {
     /**
      * Returns the minimum allowed scale.
      */
-    private float minScale() {
+    protected float minScale() {
         int vPadding = getPaddingBottom() + getPaddingTop();
         int hPadding = getPaddingLeft() + getPaddingRight();
         if (minimumScaleType == SCALE_TYPE_CENTER_CROP || minimumScaleType == SCALE_TYPE_START) {
@@ -2280,7 +2293,7 @@ public class SubsamplingScaleImageView extends View {
     /**
      * Adjust a requested scale to be within the allowed limits.
      */
-    private float limitedScale(float targetScale) {
+    protected float limitedScale(float targetScale) {
         targetScale = Math.max(minScale(), targetScale);
         targetScale = Math.min(maxScale, targetScale);
         return targetScale;
